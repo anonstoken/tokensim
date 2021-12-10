@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 ethers.utils.BN
-describe("MultiChainCapital", function () {
+describe.skip("MultiChainCapital", function () {
   it("s", async function () {
     const MCC = await hre.ethers.getContractFactory("MultiChainCapital");
 
@@ -62,5 +62,5 @@ describe("MultiChainCapital", function () {
 
     console.log();
 
-  });
-});
+  })
+})
