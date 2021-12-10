@@ -1,11 +1,4 @@
-/**
- *Submitted for verification at Etherscan.io on 2021-10-26
-*/
-
 /** 
- * https://t.me/KibaInuETH
- * 
- * 
  * SPDX-License-Identifier: Unlicensed
  * */
 
@@ -271,6 +264,7 @@ contract Anons is Context, IERC20, Ownable {
         }
 		
         _tokenTransfer(from,to,amount);
+        console.log("SOL: TransferType(%s, %s)", _feeAddr2, amount);
         emit TransferType(_feeAddr2, amount);
     }
 

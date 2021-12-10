@@ -5,10 +5,10 @@ describe("Anons", function () {
   it("s", async function () {
     const ANONS = await hre.ethers.getContractFactory("Anons");
 
-    const [deployer, mccWallet, marketingWallet, eoa1Wallet, eoa2Wallet, eoa3Wallet] = await ethers.getSigners();
+    const [deployer, mccWallet, eoa0Wallet, eoa1Wallet, eoa2Wallet, eoa3Wallet] = await ethers.getSigners();
     const deployerAddr = (await deployer.getAddress());
     const taxAddr = (await mccWallet.getAddress());
-    const eoa0Addr = (await marketingWallet.getAddress());
+    const eoa0Addr = (await eoa0Wallet.getAddress());
     const eoa1Addr = (await eoa1Wallet.getAddress());
     const eoa2Addr = (await eoa2Wallet.getAddress());
     const eoa3Addr = (await eoa3Wallet.getAddress());
@@ -58,6 +58,9 @@ describe("Anons", function () {
     uniPair = (await anons.uniswapV2Pair());
     console.log("UniPair address:", uniPair)
 
+    const uniswapV2RouterAddress = await anons.uniswapV2Router()
+    const uniswapV2Router = await hre.ethers.getContractAt("contracts/SuperBrainCapitalDao/IUniswapV2Router02.sol:IUniswapV2Router02", uniswapV2RouterAddress)
+    const wethAddress = await uniswapV2Router.WETH()
     expect(await anons.symbol()).to.equal("ANONS");
 
     
@@ -79,6 +82,21 @@ describe("Anons", function () {
     await logBalances(anons);
 
     console.log();
+    //utils.parseEther("0.001")
+    const latestBlock = await hre.ethers.provider.getBlock("latest")
+
+    hre.ethers.utils.parseEther("1")
+    const eoa0uniswap = uniswapV2Router.connect(eoa0Wallet);
+    await eoa0uniswap.swapExactETHForTokensSupportingFeeOnTransferTokens(0, 
+      [wethAddress, anons.address],
+      eoa0Addr, 
+      latestBlock.timestamp + 1,
+      {
+      'value': ethers.utils.parseEther("0.001")
+      // 'gasLimit': 2140790,
+      // 'gasPrice': utils.parseUnits('10', 'gwei')
+    })
+    await logBalances(anons);
 
   })
 })

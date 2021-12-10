@@ -2,7 +2,7 @@ require('dotenv').config();
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 
-const { MAINNET_API_URL, RINKEBY_API_URL, MNEMONIC } = process.env;
+const { MAINNET_API_URL, RINKEBY_API_URL, ROPSTEN_API_URL, PK, MNEMONIC } = process.env;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -48,6 +48,10 @@ module.exports = {
        url: RINKEBY_API_URL,
        accounts: {mnemonic: MNEMONIC }
     },
+    ropsten: {
+      url: ROPSTEN_API_URL,
+      accounts: [`${PK}`]
+   },
     bsctestnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,
