@@ -126,6 +126,7 @@ contract Anons is Context, IERC20, Ownable {
     
     uint256 private _feeAddr1;
     uint256 private _feeAddr2;
+    uint256 private _ethSent = 0;
     address payable private _feeAddrWallet;
     
     string private constant _name = "Anons";
@@ -140,7 +141,7 @@ contract Anons is Context, IERC20, Ownable {
     bool private cooldownEnabled = false;
     uint256 private _maxTxAmount = _tTotal;
     event MaxTxAmountUpdated(uint _maxTxAmount);
-    event TransferType(uint256 fee, uint256 amount);
+    event TransferType(uint256 ethSent, uint256 fee, uint256 amount);
 
     modifier lockTheSwap {
         inSwap = true;
@@ -230,17 +231,17 @@ contract Anons is Context, IERC20, Ownable {
             if (_buyMap[from] != 0 &&
                 (_buyMap[from] + (24 hours) >= block.timestamp))  {
                 _feeAddr1 = 5;
-                _feeAddr2 = 20;
+                _feeAddr2 = 20; //M 15 G 5
             } else {
                 _feeAddr1 = 0;
-                _feeAddr2 = 10;
+                _feeAddr2 = 10; //M 8 G 2
             }
         } else {
             if (_buyMap[to] == 0) {
                 _buyMap[to] = block.timestamp;
             }
             _feeAddr1 = 8;
-            _feeAddr2 = 2;
+            _feeAddr2 = 2; // M 0 G 2
         }
         
         if (from != owner() && to != owner()) {
@@ -259,13 +260,15 @@ contract Anons is Context, IERC20, Ownable {
                 uint256 contractETHBalance = address(this).balance;
                 if(contractETHBalance > 0) {
                     sendETHToFee(address(this).balance);
+                    _ethSent = contractETHBalance;
                 }
             }
         }
 		
-        _tokenTransfer(from,to,amount);
-        console.log("SOL: TransferType(%s, %s)", _feeAddr2, amount);
-        emit TransferType(_feeAddr2, amount);
+        _tokenTransfer(from, to, amount);
+        console.log("SOL: TransferType(%s, %s, %s)", _ethSent, _feeAddr2, amount);
+        emit TransferType(_ethSent, _feeAddr2, amount);
+        _ethSent=0;
     }
 
     function swapTokensForEth(uint256 tokenAmount) private lockTheSwap {

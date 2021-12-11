@@ -50,7 +50,9 @@ module.exports = {
     },
     ropsten: {
       url: ROPSTEN_API_URL,
-      accounts: [`${PK}`]
+      accounts: [`${PK}`],
+      gasPrice: 20000000000,
+      gas: 5_000_000
    },
     bsctestnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",

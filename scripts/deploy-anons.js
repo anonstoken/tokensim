@@ -18,8 +18,8 @@ async function main() {
 
   const [deployer] = await ethers.getSigners();
   const addr = (await deployer.getAddress())
-  const anons = await Anons.deploy(addr);
-
+  console.log("Deploying contract. Deployer:", addr)
+  const anons = await Anons.deploy("0xFfFFff2232E8b10707dbf64B51CaeDd568B03e13");
   const dtx = await anons.deployed()
 
   console.log("Anons deployed to:", anons.address)
@@ -35,7 +35,8 @@ async function main() {
   console.log("950_000_000_000_000_000 Anons trasfered to Contract")
 
   console.log("calling openTrading")
-  await anons.openTrading();
+  const tx = await anons.openTrading();
+  await tx.wait();
 
   const uniPair = (await anons.uniswapV2Pair());
   console.log("UniPair address:", uniPair)
