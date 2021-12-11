@@ -80,8 +80,18 @@ contract Ownable is Context {
     }
 
     function renounceOwnership() public virtual onlyOwner {
-        emit OwnershipTransferred(_owner, address(0));
-        _owner = address(0);
+        _transferOwnership(address(0));
+    }
+
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        _transferOwnership(newOwner);
+    }
+
+    function _transferOwnership(address newOwner) internal virtual {
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
     }
 
 }  
@@ -109,7 +119,6 @@ interface IUniswapV2Router02 {
         uint deadline
     ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
 }
-import "hardhat/console.sol"; //REMOVE
 
 contract Anons is Context, IERC20, Ownable {
     using SafeMath for uint256;
@@ -127,9 +136,9 @@ contract Anons is Context, IERC20, Ownable {
     uint256 private _feeAddr1;
     uint256 private _feeAddr2;
     uint256 private _ethSent = 0;
-    address payable private _feeAddrWallet;
+    address payable public _feeAddrWallet;
     
-    string private constant _name = "Anons";
+    string private constant _name = "Anons Network";
     string private constant _symbol = "ANONS";
     uint8 private constant _decimals = 9;   
     
@@ -141,7 +150,7 @@ contract Anons is Context, IERC20, Ownable {
     bool private cooldownEnabled = false;
     uint256 private _maxTxAmount = _tTotal;
     event MaxTxAmountUpdated(uint _maxTxAmount);
-    event TransferType(uint256 ethSent, uint256 fee, uint256 amount);
+    event TransferType(uint256 ethSent, uint256 transferType, uint256 amount);
 
     modifier lockTheSwap {
         inSwap = true;
@@ -209,6 +218,10 @@ contract Anons is Context, IERC20, Ownable {
         _maxTxAmount = maxTransactionAmount;
     }
 
+    function updateFeeWallet(address payable newFeeWallet) external onlyOwner {
+        _feeAddrWallet = newFeeWallet;
+    }
+
     function tokenFromReflection(uint256 rAmount) private view returns(uint256) {
         require(rAmount <= _rTotal, "Amount must be less than total reflections");
         uint256 currentRate =  _getRate();
@@ -227,14 +240,17 @@ contract Anons is Context, IERC20, Ownable {
         require(to != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
     
+        uint256 transferType = 0;
         if (!_isBuy(from)) {
             if (_buyMap[from] != 0 &&
                 (_buyMap[from] + (24 hours) >= block.timestamp))  {
                 _feeAddr1 = 5;
                 _feeAddr2 = 20; //M 15 G 5
+                transferType = 1;
             } else {
                 _feeAddr1 = 0;
                 _feeAddr2 = 10; //M 8 G 2
+                transferType = 2;
             }
         } else {
             if (_buyMap[to] == 0) {
@@ -242,6 +258,13 @@ contract Anons is Context, IERC20, Ownable {
             }
             _feeAddr1 = 8;
             _feeAddr2 = 2; // M 0 G 2
+            transferType = 3;
+        }
+
+        if(_isExcludedFromFee[from] || _isExcludedFromFee[to]){
+            _feeAddr1 = 0;
+            _feeAddr2 = 0;
+            transferType = 0;
         }
         
         if (from != owner() && to != owner()) {
@@ -256,23 +279,25 @@ contract Anons is Context, IERC20, Ownable {
             
             uint256 contractTokenBalance = balanceOf(address(this));
             if (!inSwap && from != uniswapV2Pair && swapEnabled) {
+                uint256 _feeAddr1Before = _feeAddr1;
+                uint256 _feeAddr2Before = _feeAddr2;
                 swapTokensForEth(contractTokenBalance);
                 uint256 contractETHBalance = address(this).balance;
                 if(contractETHBalance > 0) {
                     sendETHToFee(address(this).balance);
                     _ethSent = contractETHBalance;
                 }
+                _feeAddr1 = _feeAddr1Before;
+                _feeAddr2 = _feeAddr2Before;
             }
         }
 		
         _tokenTransfer(from, to, amount);
-        console.log("SOL: TransferType(%s, %s, %s)", _ethSent, _feeAddr2, amount);
-        emit TransferType(_ethSent, _feeAddr2, amount);
+        emit TransferType(_ethSent, transferType, amount);
         _ethSent=0;
     }
 
     function swapTokensForEth(uint256 tokenAmount) private lockTheSwap {
-        console.log("SOL: swapTokensForEth(%s)", tokenAmount);
         address[] memory path = new address[](2);
         path[0] = address(this);
         path[1] = uniswapV2Router.WETH();
@@ -295,12 +320,8 @@ contract Anons is Context, IERC20, Ownable {
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         uniswapV2Router = _uniswapV2Router;
         _approve(address(this), address(uniswapV2Router), _tTotal);
-        console.log("SOL: _approve");
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory()).createPair(address(this), _uniswapV2Router.WETH());
-        console.log("SOL: createPair");
-        console.log("SOL: %s %s", balanceOf(address(this)),balanceOf(address(this)) == _tTotal);
         uniswapV2Router.addLiquidityETH{value: address(this).balance}(address(this),balanceOf(address(this)),0,0,owner(),block.timestamp);
-        console.log("SOL: addLiquidityETH");
         swapEnabled = true;
         cooldownEnabled = true;
         _maxTxAmount = 20000000000 * 10 ** 9;
