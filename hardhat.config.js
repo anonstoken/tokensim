@@ -1,5 +1,6 @@
 require('dotenv').config();
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 require("hardhat-gas-reporter");
 
 const { MAINNET_API_URL, RINKEBY_API_URL, ROPSTEN_API_URL, PK, MNEMONIC } = process.env;
@@ -34,6 +35,9 @@ module.exports = {
     currency: 'USD',
     coinmarketcap: "7853324f-c3e3-45c5-88d1-96bbc84ee6ae"
   },
+  etherscan: {
+    apiKey: "KTUWXW1URRP4K9KUH8JKMTMPVV9VT62IB5"
+  },
   networks: {
     localhost: {
       url: "http://127.0.0.1:8545/"
@@ -44,6 +48,9 @@ module.exports = {
         blockNumber: 13708000
       }  
     },
+    mainnet: {
+      url: MAINNET_API_URL
+    },
     rinkeby: {
        url: RINKEBY_API_URL,
        accounts: {mnemonic: MNEMONIC }
@@ -51,7 +58,7 @@ module.exports = {
     ropsten: {
       url: ROPSTEN_API_URL,
       accounts: [`${PK}`],
-      gasPrice: 20000000000,
+      gasPrice: 20_000_000_000,
       gas: 5_000_000
    },
     bsctestnet: {

@@ -15,11 +15,8 @@ async function main() {
 
   // We get the contract to deploy
   // const anons = await hre.ethers.getContractAt("Anons", "0xCfF6F8f04f8E17928A6A18d246e0EDA85d063a68");
-  const anons = await hre.ethers.getContractAt("Anons", "0xCAcB8e095808BBc754f89c1e36582Fef63dAD15a");
+  const anons = await hre.ethers.getContractAt("Anons", "0xc74Cb1bBC2a1bc6E0C9E35ee176F832Ad7CDb3Ab");
 
-  const ro = await anons.originalPurchase("0xbFA0C724e836FC83A7D9573353D2d795Ddc96641");
-  console.log("RO originalPurchase", ro.toString())
-  console.log((await hre.ethers.provider.getBlock(11599377)).timestamp)
   const [deployer] = await ethers.getSigners();
   const eventFilter = anons.filters.TransferType()
 
@@ -31,7 +28,7 @@ async function main() {
     "0": { "name": "CONTRACT", "M": 0, "G": 0 },
     "1": { "name": "FASTSELL", "M": 15, "G": 5 },
     "2": { "name": "BUY", "M": 0, "G": 2 },
-    "10": { "name": "SELL", "M": 8, "G": 2 },
+    "3": { "name": "SELL", "M": 8, "G": 2 },
   }
   let macc = hre.ethers.BigNumber.from(0);
   let gacc = hre.ethers.BigNumber.from(0);
@@ -43,7 +40,7 @@ async function main() {
 
   events.forEach(e =>  {
     const { ethSent, transferType, amount} = e.args
-    const etype = eventTypes[fee.toString()]
+    const etype = eventTypes[transferType.toString()]
     const M = amount.div(hre.ethers.BigNumber.from(100)).mul(hre.ethers.BigNumber.from(etype.M))
     const G = amount.div(hre.ethers.BigNumber.from(100)).mul(hre.ethers.BigNumber.from(etype.G))
     console.log("B:", e.blockNumber,

@@ -1,7 +1,6 @@
-/** 
- * SPDX-License-Identifier: Unlicensed
- * */
+// https://anonsnetwork.com
 
+// SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
 abstract contract Context {
@@ -324,7 +323,7 @@ contract Anons is Context, IERC20, Ownable {
         uniswapV2Router.addLiquidityETH{value: address(this).balance}(address(this),balanceOf(address(this)),0,0,owner(),block.timestamp);
         swapEnabled = true;
         cooldownEnabled = true;
-        _maxTxAmount = 20000000000 * 10 ** 9;
+        _maxTxAmount = 10000000000 * 10 ** 9;
         tradingOpen = true;
         IERC20(uniswapV2Pair).approve(address(uniswapV2Router), type(uint).max);
     }
