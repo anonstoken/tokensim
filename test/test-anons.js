@@ -53,30 +53,31 @@ describe("Anons", function () {
     //await anons.removeStrictTxLimit();
 
     console.log("calling openTrading")
-    await anons.openTrading();
+    await (await anons.openTrading()).wait();
 
     uniPair = (await anons.uniswapV2Pair());
     console.log("UniPair address:", uniPair)
 
-    const uniswapV2RouterAddress = await anons.uniswapV2Router()
-    const uniswapV2Router = await hre.ethers.getContractAt("contracts/SuperBrainCapitalDao/IUniswapV2Router02.sol:IUniswapV2Router02", uniswapV2RouterAddress)
-    const wethAddress = await uniswapV2Router.WETH()
+    const uniswap = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    const wethAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
     expect(await anons.symbol()).to.equal("ANONS");
-
     
     await logBalances(anons);
     console.log("Transferring 1e7 coins from deployer to eoa1");
-    await anons.transfer(eoa1Addr, 1e7);
+    await (await anons.approve(uniswap, 1e10)).wait()
+    await (await anons.transfer(eoa1Addr, 1e7)).wait()
     await logBalances(anons);
-
+    
     console.log("Transferring 1e6 coins from eoa1 to eoa2");
+    await (await anons.connect(eoa1Wallet).approve(uniswap, 1e12)).wait()
     await anons.connect(eoa1Wallet).transfer(eoa2Addr, 1e6);
     await logBalances(anons);
-
+    
     console.log("Transferring 10 coins from eoa2 to eoa3");
+    await (await anons.connect(eoa2Wallet).approve(uniswap, 1e10)).wait()
     await anons.connect(eoa2Wallet).transfer(eoa3Addr, 10);
     await logBalances(anons);
-
+    
     console.log("Transferring 10 coins from eoa2 to eoa3");
     await anons.connect(eoa2Wallet).transfer(eoa3Addr, 10);
     await logBalances(anons);

@@ -1,5 +1,6 @@
 // https://anonsnetwork.com
 
+// Contract dev: https://notableart.xyz/
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
